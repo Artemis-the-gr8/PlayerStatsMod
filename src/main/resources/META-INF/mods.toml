@@ -34,8 +34,11 @@ displayName = "PlayerStats" #mandatory
 authors = "Artemis" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description = '''
-
+Adds a command that can show you any Minecraft statistic in chat -
+in the form of a top 10, a server total, or a specific player's statistic.
+Use /playerstats or /stats for more information!
 '''
+logoFile = "mod_logo_dark_gray.png"
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.playerstats]] #optional
 # the modid of the dependency
