@@ -39,6 +39,7 @@ in the form of a top 10, a server total, or a specific player's statistic.
 Use /playerstats or /stats for more information!
 '''
 logoFile = "mod_logo_dark_gray.png"
+logoBlur = true
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.playerstats]] #optional
 # the modid of the dependency
