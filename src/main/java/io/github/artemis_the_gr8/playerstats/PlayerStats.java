@@ -39,10 +39,10 @@ public class PlayerStats {
 
     @SubscribeEvent
     public void onServerStarted(ServerStartedEvent event) {
-//        AtomicInteger i = new AtomicInteger();
-//        Stats.CUSTOM.iterator().forEachRemaining(resourceLocationStat -> LOGGER.info(i.getAndIncrement() + ". " + resourceLocationStat.getName()));
-//        ForgeRegistries.ENTITIES.getEntries().forEach(resourceKeyEntityTypeEntry ->
-//                LOGGER.info(i.getAndIncrement() + ". " + resourceKeyEntityTypeEntry.getValue().toString()));
+        AtomicInteger i = new AtomicInteger();
+        Stats.CUSTOM.iterator().forEachRemaining(resourceLocationStat -> LOGGER.info(i.getAndIncrement() + ". " + resourceLocationStat.getName()));
+        ForgeRegistries.ENTITIES.getEntries().forEach(resourceKeyEntityTypeEntry ->
+                LOGGER.info(i.getAndIncrement() + ". " + resourceKeyEntityTypeEntry.getValue().toString()));
     }
 
     @Mod.EventBusSubscriber(modid = PlayerStats.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
