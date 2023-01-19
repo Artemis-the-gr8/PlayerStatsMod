@@ -31,9 +31,17 @@ public class TestCommand {
                         .executes(TestCommand::execute)))
                 .then(Commands.literal("minecraft:killed")
                         .then(Commands.argument("entities", ResourceKeyArgument.key(ForgeRegistries.ENTITIES.getRegistryKey()))
-                        .executes(TestCommand::execute)))
+                        .executes(TestCommand::executeEntityCommand)))
                 .then(Commands.argument("stats", ResourceKeyArgument.key(ForgeRegistries.STAT_TYPES.getRegistryKey()))
                         .executes(TestCommand::execute)));
+    }
+
+    private static int executeEntityCommand(CommandContext<CommandSourceStack> command) {
+        if (command.getSource().getEntity() instanceof Player player) {
+            player.sendMessage(new TextComponent("last child: " + command.getLastChild().toString()), Util.NIL_UUID);
+            return Command.SINGLE_SUCCESS;
+        }
+        return 0;
     }
 
     private static int execute(CommandContext<CommandSourceStack> command) {
@@ -58,7 +66,7 @@ public class TestCommand {
                     int minedBlock = serverPlayer.getStats().getValue(Stats.BLOCK_MINED, block);
                     MutableComponent msg2 = new TextComponent("You mined ")
                             .append(block.getName())
-                            .append(minedBlock + " times");
+                            .append(" " + minedBlock + " times");
                     player.sendMessage(msg2, Util.NIL_UUID);
                 }
 
@@ -66,7 +74,7 @@ public class TestCommand {
                     int entityKilled = serverPlayer.getStats().getValue(Stats.ENTITY_KILLED, entity);
                     MutableComponent text = new TextComponent("You killed ")
                             .append(entity.getDescription())
-                            .append(entityKilled + " times");
+                            .append(" " + entityKilled + " times");
 
                     player.sendMessage(text, Util.NIL_UUID);
                 }
