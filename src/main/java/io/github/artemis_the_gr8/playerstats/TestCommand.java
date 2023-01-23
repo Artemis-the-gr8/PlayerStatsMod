@@ -2,6 +2,7 @@ package io.github.artemis_the_gr8.playerstats;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import net.minecraft.Util;
@@ -24,19 +25,23 @@ import java.util.Map;
 
 public class TestCommand {
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("playerstats")
                 .then(Commands.literal("minecraft:broken")
                         .then(Commands.argument("tools", ResourceKeyArgument.key(ForgeRegistries.ITEMS.getRegistryKey()))
-                        .executes(TestCommand::execute)))
+                        .executes(this::execute)))
                 .then(Commands.literal("minecraft:killed")
                         .then(Commands.argument("entities", ResourceKeyArgument.key(ForgeRegistries.ENTITIES.getRegistryKey()))
-                        .executes(TestCommand::executeEntityCommand)))
+                        .executes(this::executeEntityCommand)))
                 .then(Commands.argument("stats", ResourceKeyArgument.key(ForgeRegistries.STAT_TYPES.getRegistryKey()))
-                        .executes(TestCommand::execute)));
+                        .executes(this::execute)));
     }
 
-    private static int executeEntityCommand(CommandContext<CommandSourceStack> command) {
+    private LiteralArgumentBuilder<CommandSourceStack> getStatCommandBuilder() {
+        return Commands.literal("playerstats");
+    }
+
+    private int executeEntityCommand(CommandContext<CommandSourceStack> command) {
         if (command.getSource().getEntity() instanceof Player player) {
             player.sendMessage(new TextComponent("last child: " + command.getLastChild().toString()), Util.NIL_UUID);
             return Command.SINGLE_SUCCESS;
@@ -44,7 +49,7 @@ public class TestCommand {
         return 0;
     }
 
-    private static int execute(CommandContext<CommandSourceStack> command) {
+    private int execute(CommandContext<CommandSourceStack> command) {
         if(command.getSource().getEntity() instanceof Player player) {
 
             player.sendMessage(new TextComponent("input: " + command.getInput()), Util.NIL_UUID);

@@ -50,7 +50,8 @@ public class PlayerStats {
 
         @SubscribeEvent
         public static void registerCommands(@NotNull RegisterCommandsEvent event) {
-            TestCommand.register(event.getDispatcher());
+            TestCommand test = new TestCommand();
+            test.register(event.getDispatcher());
         }
     }
 }
