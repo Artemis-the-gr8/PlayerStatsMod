@@ -7,6 +7,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.logging.LogUtils;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -62,10 +63,6 @@ public class TestCommand {
         return statCommand;
     }
 
-    private int itemCommand(CommandContext<CommandSourceStack> command) {
-        return 1;
-    }
-
     private int entityCommand(CommandContext<CommandSourceStack> command) {
         if (command.getSource().getEntity() instanceof Player player) {
             player.sendMessage(new TextComponent("last child: " + command.getLastChild().toString()), Util.NIL_UUID);
@@ -75,22 +72,22 @@ public class TestCommand {
     }
 
     private int execute(CommandContext<CommandSourceStack> command) throws CommandSyntaxException {
-        if(command.getSource().getEntity() instanceof Player player) {
+        if(command.getSource().getEntity() instanceof ServerPlayer serverPlayer) {
+            try {
+                serverPlayer.sendMessage(new TextComponent("input: " + command.getInput()), Util.NIL_UUID);
+                serverPlayer.sendMessage(new TextComponent("hi"), Util.NIL_UUID);
 
-            player.sendMessage(new TextComponent("input: " + command.getInput()), Util.NIL_UUID);
+                for (ParsedCommandNode<?> node : command.getNodes()) {
+                    serverPlayer.sendMessage(new TextComponent(node.getNode().getName()), Util.NIL_UUID);
+                }
+                serverPlayer.sendMessage(new TextComponent("\n"), Util.NIL_UUID);
 
-            for (ParsedCommandNode<?> node : command.getNodes()) {
-                player.sendMessage(new TextComponent(node.getNode().toString()), Util.NIL_UUID);
-            }
-            player.sendMessage(new TextComponent("\n"), Util.NIL_UUID);
-
-            if (player instanceof ServerPlayer serverPlayer) {
-                ResourceKeyArgument<?> customStat = command.getArgument("custom", ResourceKeyArgument.class);
+                Stat<?> customStat = command.getArgument("custom", Stat.class);
+//                ResourceKeyArgument<?> customStat = command.getArgument("custom", ResourceKeyArgument.class);
                 if (customStat != null) {
-                    StringReader stringReader = new StringReader(customStat.toString());
-                    Stat<?> statResourceLocation = Stats.CUSTOM.get(customStat.parse(stringReader).getRegistryName());
-                    int stat = serverPlayer.getStats().getValue(statResourceLocation);
-                    MutableComponent statMsg = new TranslatableComponent(statResourceLocation.getName())
+
+                    int stat = serverPlayer.getStats().getValue(customStat);
+                    MutableComponent statMsg = new TranslatableComponent(customStat.getName())
                             .append(": ")
                             .append(stat + " times");
                 }
@@ -108,7 +105,7 @@ public class TestCommand {
                     MutableComponent msg2 = new TextComponent("You mined ")
                             .append(block.getName())
                             .append(" " + minedBlock + " times");
-                    player.sendMessage(msg2, Util.NIL_UUID);
+                    serverPlayer.sendMessage(msg2, Util.NIL_UUID);
                 }
 
                 if (entity != null) {
@@ -117,8 +114,11 @@ public class TestCommand {
                             .append(entity.getDescription())
                             .append(" " + entityKilled + " times");
 
-                    player.sendMessage(text, Util.NIL_UUID);
+                    serverPlayer.sendMessage(text, Util.NIL_UUID);
                 }
+
+            } catch (Exception e) {
+                LogUtils.getLogger().error("exception", e);
             }
         }
         return Command.SINGLE_SUCCESS;
