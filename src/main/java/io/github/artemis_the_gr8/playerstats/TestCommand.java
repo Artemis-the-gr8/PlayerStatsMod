@@ -2,7 +2,6 @@ package io.github.artemis_the_gr8.playerstats;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ParsedCommandNode;
@@ -12,6 +11,7 @@ import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceKeyArgument;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -51,6 +51,7 @@ public class TestCommand {
         for (StatType<?> statType : ForgeRegistries.STAT_TYPES) {
             if (statType == Stats.CUSTOM) {
                 //TODO make a RequiredArgumentBuilder here, and do statCommand.then() after the if/else
+
                 statCommand.then(Commands.argument("custom", ResourceKeyArgument.key(Stats.CUSTOM.getRegistry().key()))
                         .executes(this::execute));
             } else {
@@ -74,22 +75,24 @@ public class TestCommand {
     private int execute(CommandContext<CommandSourceStack> command) throws CommandSyntaxException {
         if(command.getSource().getEntity() instanceof ServerPlayer serverPlayer) {
             try {
-                serverPlayer.sendMessage(new TextComponent("input: " + command.getInput()), Util.NIL_UUID);
-                serverPlayer.sendMessage(new TextComponent("hi"), Util.NIL_UUID);
+                serverPlayer.sendMessage(new TextComponent("input: " + command.getInput() + "\n"), Util.NIL_UUID);
 
-                for (ParsedCommandNode<?> node : command.getNodes()) {
-                    serverPlayer.sendMessage(new TextComponent(node.getNode().getName()), Util.NIL_UUID);
-                }
-                serverPlayer.sendMessage(new TextComponent("\n"), Util.NIL_UUID);
-
-                Stat<?> customStat = command.getArgument("custom", Stat.class);
-//                ResourceKeyArgument<?> customStat = command.getArgument("custom", ResourceKeyArgument.class);
+                ResourceKey<?> customStat = command.getArgument("custom", ResourceKey.class);
                 if (customStat != null) {
 
-                    int stat = serverPlayer.getStats().getValue(customStat);
-                    MutableComponent statMsg = new TranslatableComponent(customStat.getName())
-                            .append(": ")
-                            .append(stat + " times");
+                    ResourceLocation location = Registry.CUSTOM_STAT.get(customStat.location());
+                    if (location != null && ResourceLocation.isValidResourceLocation(location.toString())) {
+                        try {
+                            Stat<?> stat = Stats.CUSTOM.get(location);
+                            int statValue = serverPlayer.getStats().getValue(stat);
+                            MutableComponent statMsg = new TranslatableComponent(stat.getName())
+                                    .append(": ")
+                                    .append(statValue + " times");
+                            serverPlayer.sendMessage(statMsg, Util.NIL_UUID);
+                        } catch (Exception e) {
+                            LogUtils.getLogger().error("exception", e);
+                        }
+                    }
                 }
 
                 Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryParse("minecraft:dirt"));
