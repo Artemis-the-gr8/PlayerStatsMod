@@ -8,6 +8,7 @@ import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import net.minecraft.Util;
+import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceKeyArgument;
@@ -72,10 +73,14 @@ public class TestCommand {
         return 0;
     }
 
+    private String getTranslationKey(Stat<ResourceLocation> pStat) {
+        return "stat." + pStat.getValue().toString().replace(':', '.');
+    }
+
     private int execute(CommandContext<CommandSourceStack> command) throws CommandSyntaxException {
         if(command.getSource().getEntity() instanceof ServerPlayer serverPlayer) {
             try {
-                serverPlayer.sendMessage(new TextComponent("input: " + command.getInput() + "\n"), Util.NIL_UUID);
+                serverPlayer.sendMessage(new TextComponent("input: " + command.getInput()), Util.NIL_UUID);
 
                 ResourceKey<?> customStat = command.getArgument("custom", ResourceKey.class);
                 if (customStat != null) {
@@ -83,11 +88,11 @@ public class TestCommand {
                     ResourceLocation location = Registry.CUSTOM_STAT.get(customStat.location());
                     if (location != null && ResourceLocation.isValidResourceLocation(location.toString())) {
                         try {
-                            Stat<?> stat = Stats.CUSTOM.get(location);
+                            Stat<ResourceLocation> stat = Stats.CUSTOM.get(location);
                             int statValue = serverPlayer.getStats().getValue(stat);
-                            MutableComponent statMsg = new TranslatableComponent(stat.getName())
+                            MutableComponent statMsg = new TranslatableComponent(getTranslationKey(stat))
                                     .append(": ")
-                                    .append(statValue + " times");
+                                    .append(statValue + "\n");
                             serverPlayer.sendMessage(statMsg, Util.NIL_UUID);
                         } catch (Exception e) {
                             LogUtils.getLogger().error("exception", e);
@@ -95,7 +100,7 @@ public class TestCommand {
                     }
                 }
 
-                Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryParse("minecraft:dirt"));
+                /*Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.tryParse("minecraft:dirt"));
                 EntityType<?> entity = null;
                 for (Map.Entry<ResourceKey<EntityType<?>>, EntityType<?>> entityType : ForgeRegistries.ENTITIES.getEntries()) {
                     if (entityType.getValue().toString().equalsIgnoreCase("entity.quark.wraith")) {
@@ -118,7 +123,7 @@ public class TestCommand {
                             .append(" " + entityKilled + " times");
 
                     serverPlayer.sendMessage(text, Util.NIL_UUID);
-                }
+                }*/
 
             } catch (Exception e) {
                 LogUtils.getLogger().error("exception", e);
